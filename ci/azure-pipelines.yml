@@ -1,0 +1,87 @@
+name: $(BuildID).$(Date:yyMMdd)$(Rev:.r)
+
+# auto-trigger build on merge
+trigger:
+  batch: false
+  branches:
+    include:
+      [
+        'master',
+      ]
+  paths:
+    exclude:
+      [
+        '.vscode',
+        '.github',
+        '*.md',
+      ]
+
+# auto-trigger build on pull request
+pr:
+  branches:
+    include:
+      [
+        'master',
+      ]
+  paths:
+    exclude:
+      [
+        '.vscode',
+        '.github',
+        '*.md',
+      ]
+
+variables:
+  nodeVersion: '>=10.15.3'
+  npmVersion: 'latest'
+
+jobs:
+- job: Build_Ubuntu
+  pool:
+    vmImage: 'ubuntu-16.04'
+    demands: npm
+  steps:
+    - template: templates/setup-environment.yml
+    - template: templates/install-dependencies.yml
+    - template: templates/compile.yml
+    - script: |
+        set -e
+        /usr/bin/Xvfb :10 -ac >> /tmp/Xvfb.out 2>&1 &
+        disown -ar
+      displayName: 'Start xvfb'
+    - script: 'node node_modules/vscode/bin/test'
+      displayName: 'Run tests'
+      env:
+        DISPLAY: :10
+
+- job: Build_macOS
+  pool:
+    vmImage: 'macOS-10.14'
+    demands: npm
+  steps:
+    - template: templates/setup-environment.yml
+    - template: templates/install-dependencies.yml
+    - template: templates/compile.yml
+    - script: |
+        node node_modules/vscode/bin/test
+      displayName: 'Run tests'
+
+- job: Build_Windows
+  dependsOn:
+    [
+      'Build_Ubuntu',
+      'Build_macOS',
+    ]
+  pool:
+    vmImage: 'windows-2019'
+    demands: npm
+  steps:
+    - template: templates/setup-environment.yml
+    - template: templates/install-dependencies.yml
+    - template: templates/compile.yml
+    - script: |
+        node node_modules/vscode/bin/test
+      displayName: 'Run tests'
+
+    # only publish artifact once
+    - template: templates/package-artifact.yml
