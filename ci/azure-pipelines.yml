@@ -13,7 +13,7 @@ trigger:
       [
         '.vscode',
         '.github',
-        '*.md',
+        '**/*.md',
       ]
 
 # auto-trigger build on pull request
@@ -28,7 +28,7 @@ pr:
       [
         '.vscode',
         '.github',
-        '*.md',
+        '**/*.md',
       ]
 
 variables:
