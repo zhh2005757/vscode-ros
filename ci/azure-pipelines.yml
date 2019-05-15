@@ -1,4 +1,4 @@
-name: $(BuildID).$(Date:yyMMdd)$(Rev:.r)
+name: $(BuildID).$(Date:yyMMdd)
 
 # CI triggers
 trigger:
@@ -96,8 +96,8 @@ stages:
       in(variables['build.reason'], 'Manual', 'IndividualCI', 'BatchedCI')
     )
   jobs:
-  - job: package_artifact
-    displayName: Artifact
+  - job: publish_ubuntu
+    displayName: Extension
     pool:
       vmImage: 'ubuntu-16.04'
       demands: npm
@@ -106,27 +106,14 @@ stages:
       - template: templates/install-dependencies.yml
       - template: templates/compile.yml
       - template: templates/package-artifact.yml
-
-  - job: publish_extension
-    displayName: Extension
-    pool:
-      vmImage: 'ubuntu-16.04'
-      demands: npm
-    condition:
-      and(
-        succeeded(),
-        in(variables['build.reason'], 'Manual'),
-        eq(variables['build.release'], 'true')
-      )
-    steps:
-      - template: templates/setup-environment.yml
-      - template: templates/install-dependencies.yml
-      - template: templates/compile.yml
-      - script: |
-          npm install --global vsce
-        displayName: 'Install vsce'
-      - script: |
-          vsce publish -p $env:PUBLISHER_TOKEN
+      - bash: |
+          vsce publish -p $PUBLISHER_TOKEN
         displayName: 'Publish extension'
         env:
           PUBLISHER_TOKEN: $(build.release.token_kejxu)
+        condition:
+          and(
+            succeeded(),
+            in(variables['build.reason'], 'Manual'),
+            eq(variables['build.release'], 'true')
+          )
