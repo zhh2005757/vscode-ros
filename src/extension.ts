@@ -11,7 +11,11 @@ import CppFormatter from "./cpp-formatter";
 import * as debug from "./debug";
 import * as master from "./master";
 import * as pfs from "./promise-fs";
+import * as telemetry from "./telemetry-helper";
 import * as utils from "./utils";
+
+import * as roslaunch from "./ros/roslaunch";
+import * as rosrun from "./ros/rosrun";
 
 /**
  * The catkin workspace base dir.
@@ -56,14 +60,14 @@ export enum Commands {
 }
 
 export async function activate(context: vscode.ExtensionContext) {
+    const reporter = telemetry.getReporter(context);
+
     // Activate if we're in a catkin workspace.
     await determineBuildSystem(vscode.workspace.rootPath);
 
     if (buildSystem == BuildSystem.None) {
         return;
     }
-
-    console.log(`Activating ROS extension in "${baseDir}"`);
 
     // Activate components when the ROS env is changed.
     context.subscriptions.push(onDidChangeEnv(activateEnvironment.bind(null, context)));
@@ -90,6 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
     sourceRosAndWorkspace();
 
+    reporter.sendTelemetryActivate();
     return {
         getBaseDir: () => baseDir,
         getEnv: () => env,
@@ -148,69 +153,40 @@ function activateEnvironment(context: vscode.ExtensionContext) {
 
     // register plugin commands
     subscriptions.push(
-        vscode.commands.registerCommand(Commands.CreateCatkinPackage, catkin.createPackage),
-        vscode.commands.registerCommand(Commands.CreateTerminal, utils.createTerminal),
-        vscode.commands.registerCommand(Commands.GetDebugSettings, debug.getDebugSettings),
-        vscode.commands.registerCommand(Commands.ShowCoreStatus, () => { master.launchMonitor(context) }),
-        vscode.commands.registerCommand(Commands.StartRosCore, master.startCore),
-        vscode.commands.registerCommand(Commands.TerminateRosCore, () => { master.stopCore(masterApi) }),
-        vscode.commands.registerCommand(Commands.UpdateCppProperties, build.updateCppProperties),
-        vscode.commands.registerCommand(Commands.UpdatePythonPath, build.updatePythonPath),
-        vscode.commands.registerCommand(Commands.Rosrun, rosrundelegate),
-        vscode.commands.registerCommand(Commands.Roslaunch, roslaunchdelegate),
+        vscode.commands.registerCommand(Commands.CreateCatkinPackage, () => {
+            catkin.createPackage(context);
+        }),
+        vscode.commands.registerCommand(Commands.CreateTerminal, () => {
+            utils.createTerminal(context);
+        }),
+        vscode.commands.registerCommand(Commands.GetDebugSettings, () => {
+            debug.getDebugSettings(context);
+        }),
+        vscode.commands.registerCommand(Commands.ShowCoreStatus, () => {
+            master.launchMonitor(context);
+        }),
+        vscode.commands.registerCommand(Commands.StartRosCore, () => {
+            master.startCore(context);
+        }),
+        vscode.commands.registerCommand(Commands.TerminateRosCore, () => {
+            master.stopCore(context, masterApi);
+        }),
+        vscode.commands.registerCommand(Commands.UpdateCppProperties, () => {
+            build.updateCppProperties(context);
+        }),
+        vscode.commands.registerCommand(Commands.UpdatePythonPath, () => {
+            build.updatePythonPath(context);
+        }),
+        vscode.commands.registerCommand(Commands.Rosrun, () => {
+            rosrun.setup(context);
+        }),
+        vscode.commands.registerCommand(Commands.Roslaunch, () => {
+            roslaunch.setup(context);
+        }),
     );
 
     // Generate config files if they don't already exist.
     build.createConfigFiles();
-}
-
-async function rosrundelegate() {
-    let terminal = await preparerosrun();
-    terminal.show();
-}
-
-async function preparerosrun(): Promise<vscode.Terminal> {
-    const packages = utils.getPackages();
-    const packageName = await vscode.window.showQuickPick(packages.then(Object.keys), { placeHolder: "Choose a package" });
-    if (packageName !== undefined) {
-        let basenames = (files: string[]) => files.map(file => path.basename(file));
-
-        const executables = utils.findPackageExecutables(packageName).then(basenames);
-        let target = await vscode.window.showQuickPick(executables, { placeHolder: "Choose an executable" });
-        let argument = await vscode.window.showInputBox({ placeHolder: "Enter any extra arguments" });
-        let terminal = vscode.window.createTerminal({
-            name: "rosrun",
-            env: env
-        });
-        terminal.sendText(`rosrun ${packageName} ${target} ${argument}`);
-        return terminal;
-    } else {
-        // none of the packages selected, error!
-    }
-}
-
-async function roslaunchdelegate() {
-    let terminal = await prepareroslaunch();
-    terminal.show();
-}
-
-async function prepareroslaunch(): Promise<vscode.Terminal> {
-    const packages = utils.getPackages();
-    const packageName = await vscode.window.showQuickPick(packages.then(Object.keys), { placeHolder: "Choose a package" });
-    if (packageName !== undefined) {
-        const launchFiles = await utils.findPackageLaunchFiles(packageName);
-        const launchFileBasenames = launchFiles.map((filename) => path.basename(filename));
-        let target = await vscode.window.showQuickPick(launchFileBasenames, { placeHolder: "Choose a launch file" });
-        let argument = await vscode.window.showInputBox({ placeHolder: "Enter any extra arguments" });
-        let terminal = vscode.window.createTerminal({
-            name: "roslaunch",
-            env: env
-        });
-        terminal.sendText(`roslaunch ${launchFiles[launchFileBasenames.indexOf(target)]} ${argument}`);
-        return terminal;
-    } else {
-        // none of the packages selected, error!
-    }
 }
 
 /**
