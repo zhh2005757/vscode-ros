@@ -27,3 +27,4 @@ export function getExtensionConfiguration(): vscode.WorkspaceConfiguration {
     const rosConfigurationName: string = "ros";
     return vscode.workspace.getConfiguration(rosConfigurationName);
 }
+
