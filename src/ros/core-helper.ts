@@ -59,7 +59,7 @@ export function launchMonitor(context: vscode.ExtensionContext) {
 
     panel.webview.html = getCoreStatusWebviewContent(stylesheet, script);
 
-    setInterval(() => {
+    const pollingStatus = setInterval(() => {
         const masterApi = new XmlRpcApi(extension.env.ROS_MASTER_URI);
         masterApi.check().then((status: boolean) => {
             if (status) {
@@ -84,6 +84,9 @@ export function launchMonitor(context: vscode.ExtensionContext) {
             }
         });
     }, 100);
+    panel.onDidDispose(() => {
+        clearInterval(pollingStatus);
+    });
 }
 
 function getCoreStatusWebviewContent(stylesheet: vscode.Uri, script: vscode.Uri): string {
