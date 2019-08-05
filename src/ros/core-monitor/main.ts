@@ -23,7 +23,7 @@ function generateParemetersUnorderedList(parameters) {
             li.appendChild(generateParemetersUnorderedList(parameters[p]));
         }
         else {
-            li.appendChild(document.createTextNode(parameters[p].trim().toString()));
+            li.appendChild(document.createTextNode(parameters[p].toString().trim()));
         }
         ul.appendChild(li);
     }
