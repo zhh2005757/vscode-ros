@@ -11,7 +11,7 @@ import * as pfs from "./promise-fs";
 import * as telemetry from "./telemetry-helper";
 import * as vscode_utils from "./vscode-utils";
 
-import * as catkin from "./catkin/catkin";
+import * as buildtool from "./build-tool/build-tool"
 
 import * as ros_build_utils from "./ros/build-env-utils";
 import * as ros_cli from "./ros/cli";
@@ -24,12 +24,9 @@ import URDFPreviewManager from "./urdfPreview/previewManager"
  */
 export let baseDir: string;
 
-export enum BuildSystem { None, CatkinMake, CatkinTools };
-
-/**
- * The build system in use.
- */
-export let buildSystem: BuildSystem;
+export function setBaseDir(dir: string) {
+    baseDir = dir;
+}
 
 /**
  * The sourced ROS environment.
@@ -66,9 +63,8 @@ export async function activate(context: vscode.ExtensionContext) {
     const reporter = telemetry.getReporter(context);
 
     // Activate if we're in a catkin workspace.
-    await determineBuildSystem(vscode.workspace.rootPath);
-
-    if (buildSystem == BuildSystem.None) {
+    let buildToolDetected = await buildtool.determineBuildTool(vscode.workspace.rootPath);
+    if (!buildToolDetected) {
         return;
     }
 
@@ -116,28 +112,6 @@ export function deactivate() {
 }
 
 /**
- * Determines build system and workspace path in use by checking for unique
- * auto-generated files.
- */
-async function determineBuildSystem(dir: string): Promise<void> {
-    while (dir && path.dirname(dir) !== dir) {
-        if (await pfs.exists(`${dir}/.catkin_workspace`)) {
-            baseDir = dir;
-            buildSystem = BuildSystem.CatkinMake;
-            return;
-        } else if (await pfs.exists(`${dir}/.catkin_tools`)) {
-            baseDir = dir;
-            buildSystem = BuildSystem.CatkinTools;
-            return;
-        }
-
-        dir = path.dirname(dir);
-    }
-
-    buildSystem = BuildSystem.None;
-}
-
-/**
  * Activates components which require a ROS env.
  */
 function activateEnvironment(context: vscode.ExtensionContext) {
@@ -157,13 +131,13 @@ function activateEnvironment(context: vscode.ExtensionContext) {
     coreStatusItem.activate();
 
     subscriptions.push(coreStatusItem);
-    subscriptions.push(vscode.workspace.registerTaskProvider("catkin", catkin.getCatkinTaskProvider()));
+    subscriptions.push(buildtool.BuildTool.registerTaskProvider());
     subscriptions.push(vscode.debug.registerDebugConfigurationProvider("ros", debug_provider.getRosDebugConfigurationProvider()));
 
     // register plugin commands
     subscriptions.push(
         vscode.commands.registerCommand(Commands.CreateCatkinPackage, () => {
-            catkin.createPackage(context);
+            buildtool.BuildTool.createPackage(context);
         }),
         vscode.commands.registerCommand(Commands.CreateTerminal, () => {
             ros_utils.createTerminal(context);
