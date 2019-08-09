@@ -4,14 +4,14 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
-import * as utils from "../../../ros/utils";
+import { rosApi } from "../../../ros/ros";
 
 // interact with the user to create a roslaunch or rosrun configuration
 export class LaunchResolver implements vscode.DebugConfigurationProvider {
     public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken) {
         const command = await vscode.window.showQuickPick(["roslaunch", "rosrun"], { placeHolder: "Launch command" });
 
-        const getPackages = utils.getPackages();
+        const getPackages = rosApi.getPackages();
         const packageName = await vscode.window.showQuickPick(getPackages.then((packages: { [name: string]: string }) => {
             return Object.keys(packages);
         }), { placeHolder: "Package" });
@@ -22,10 +22,10 @@ export class LaunchResolver implements vscode.DebugConfigurationProvider {
             let basenames = (files: string[]) => files.map(file => path.basename(file));
 
             if (command === "roslaunch") {
-                const launches = utils.findPackageLaunchFiles(packageName).then(basenames);
+                const launches = rosApi.findPackageLaunchFiles(packageName).then(basenames);
                 target = await vscode.window.showQuickPick(launches, { placeHolder: "Launch file" });
             } else {
-                const executables = utils.findPackageExecutables(packageName).then(basenames);
+                const executables = rosApi.findPackageExecutables(packageName).then(basenames);
                 target = await vscode.window.showQuickPick(executables, { placeHolder: "Executable" });
             }
         } else {

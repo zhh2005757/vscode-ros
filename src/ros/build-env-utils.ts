@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 import * as extension from "../extension";
 import * as pfs from "../promise-fs";
 import * as telemetry from "../telemetry-helper";
-import * as utils from "./utils";
+import { rosApi } from "./ros";
 
 const PYTHON_AUTOCOMPLETE_PATHS = "python.autoComplete.extraPaths";
 
@@ -47,10 +47,10 @@ export async function updateCppProperties(context: vscode.ExtensionContext): Pro
  * Updates the `c_cpp_properties.json` file with ROS include paths.
  */
 async function updateCppPropertiesInternal(): Promise<void> {
-    let includes = await utils.getIncludeDirs();
+    let includes = await rosApi.getIncludeDirs();
 
     // Get all packages within the workspace that have an include directory
-    const filteredPackages = await utils.getPackages().then((packages: { [name: string]: string }) => {
+    const filteredPackages = await rosApi.getPackages().then((packages: { [name: string]: string }) => {
         return Object.values(packages).filter((packagePath: string) => {
             return packagePath.startsWith(extension.baseDir);
         });

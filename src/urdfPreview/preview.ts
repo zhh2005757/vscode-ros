@@ -3,7 +3,8 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { xacro, getPackages } from '../ros/utils'; 
+import { rosApi } from '../ros/ros';
+import { xacro } from '../ros/utils'; 
 import { Disposable, window } from 'vscode';
 
 export default class URDFPreview 
@@ -109,8 +110,8 @@ export default class URDFPreview
             urdfText = doc.getText();
         }
 
-        var packageMap = await getPackages();
-            
+        var packageMap = await rosApi.getPackages();
+
         // replace package://(x) with fully resolved paths
         var pattern =  /package:\/\/(.*?)\//g;
         var match;

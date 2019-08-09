@@ -9,12 +9,12 @@ import * as pfs from "./promise-fs";
 import * as telemetry from "./telemetry-helper";
 import * as vscode_utils from "./vscode-utils";
 
-import * as buildtool from "./build-tool/build-tool"
+import * as buildtool from "./build-tool/build-tool";
 
 import * as ros_build_utils from "./ros/build-env-utils";
 import * as ros_cli from "./ros/cli";
-import * as ros_core from "./ros/core-helper";
 import * as ros_utils from "./ros/utils";
+import { rosApi } from "./ros/ros";
 import URDFPreviewManager from "./urdfPreview/previewManager"
 
 import * as debug_manager from "./debugger/manager";
@@ -132,13 +132,8 @@ function activateEnvironment(context: vscode.ExtensionContext) {
         return;
     }
 
-    // Set up the master.
-    const roscoreApi = new ros_core.XmlRpcApi(env.ROS_MASTER_URI);
-    const coreStatusItem = new ros_core.StatusBarItem(roscoreApi);
-
-    coreStatusItem.activate();
-
-    subscriptions.push(coreStatusItem);
+    rosApi.setContext(context, env);
+    subscriptions.push(rosApi.activateCoreMonitor());
     subscriptions.push(buildtool.BuildTool.registerTaskProvider());
 
     debug_manager.registerRosDebugManager(context);
@@ -155,13 +150,13 @@ function activateEnvironment(context: vscode.ExtensionContext) {
             debug_utils.getDebugSettings(context);
         }),
         vscode.commands.registerCommand(Commands.ShowCoreStatus, () => {
-            ros_core.launchMonitor(context);
+            rosApi.showCoreMonitor();
         }),
         vscode.commands.registerCommand(Commands.StartRosCore, () => {
-            ros_core.startCore(context);
+            rosApi.startCore();
         }),
         vscode.commands.registerCommand(Commands.TerminateRosCore, () => {
-            ros_core.stopCore(context, roscoreApi);
+            rosApi.stopCore();
         }),
         vscode.commands.registerCommand(Commands.UpdateCppProperties, () => {
             ros_build_utils.updateCppProperties(context);

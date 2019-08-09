@@ -2,9 +2,7 @@
 // Licensed under the MIT License.
 
 import * as child_process from "child_process";
-import * as fs from "fs";
 import * as os from "os";
-import * as path from "path";
 import * as vscode from "vscode";
 
 import * as extension from "../extension";
@@ -76,115 +74,6 @@ export function xacro(filename: string): Promise<any> {
  */
 export function getDistros(): Promise<string[]> {
     return pfs.readdir("/opt/ros");
-}
-
-/**
- * Gets a map of package names to paths.
- */
-export function getPackages(): Promise<{ [name: string]: string }> {
-    return new Promise((resolve, reject) => child_process.exec("rospack list", { env: extension.env }, (err, out) => {
-        if (!err) {
-            const lines = out.trim().split(os.EOL).map(((line) => {
-                const info: string[] = line.split(" ");
-                if (info.length === 2) {
-                    // each line should contain exactly 2 strings separated by 1 space
-                    return info;
-                }
-            }));
-
-            const packageInfoReducer = (acc: object, cur: string[]) => {
-                const k: string = cur[0] as string;
-                const v: string = cur[1] as string;
-                acc[k] = v;
-                return acc;
-            };
-            resolve(lines.reduce(packageInfoReducer, {}));
-        } else {
-            reject(err);
-        }
-    }));
-}
-
-export async function getIncludeDirs(): Promise<string[]> {
-    const cmakePrefixPaths: string[] = [];
-    if (extension.env.hasOwnProperty("CMAKE_PREFIX_PATH")) {
-        cmakePrefixPaths.push(...extension.env.CMAKE_PREFIX_PATH.split(path.delimiter));
-    }
-
-    const includeDirs: string[] = [];
-    const fsPromises = cmakePrefixPaths.map((dir: string) => {
-        const include = path.join(dir, "include");
-        return fs.promises.access(include, fs.constants.F_OK)
-            .then(() => {
-                includeDirs.push(include);
-            })
-            .catch(() => {
-                // suppress exception if include folder does not exist
-            });
-    });
-    return Promise.all(fsPromises).then(() => {
-        return includeDirs;
-    });
-}
-
-export function findPackageFiles(packageName: string, filter: string, pattern: string): Promise<string[]> {
-    return new Promise((c, _e) => child_process.exec(`catkin_find --without-underlays ${filter} ${packageName}`,
-        { env: extension.env }, (_err, out) => {
-            let findFilePromises = [];
-            let paths = out.trim().split(os.EOL);
-            paths.forEach(foundPath => {
-                let normalizedPath = path.win32.normalize(foundPath);
-                findFilePromises.push(new Promise((found) => child_process.exec(`where /r "${normalizedPath}" ` + pattern,
-                    { env: extension.env }, (err, out) =>
-                        err ? found(null) : found(out.trim().split(os.EOL))
-                )));
-            });
-
-            return Promise.all(findFilePromises).then(values => {
-                // remove null elements
-                values = values.filter(s => s != null) as string[];
-
-                // flatten
-                values = [].concat(...values);
-                c(values);
-            });
-        }
-    ));
-}
-
-/**
- * list full paths to all executables inside a package
- */
-export function findPackageExecutables(packageName: string): Promise<string[]> {
-    let command: string;
-    if (process.platform === "win32") {
-        return findPackageFiles(packageName, `--libexec`, `*.exe`);
-    } else {
-        const dirs = `catkin_find --without-underlays --libexec --share '${packageName}'`;
-        command = `find $(${dirs}) -type f -executable`;
-        return new Promise((c, e) => child_process.exec(command, { env: extension.env }, (err, out) =>
-            err ? e(err) : c(out.trim().split(os.EOL))
-        ));
-    }
-
-}
-
-/**
- * list all .launch files inside a package
- */
-export function findPackageLaunchFiles(packageName: string): Promise<string[]> {
-    let command: string;
-    if (process.platform === "win32") {
-        return findPackageFiles(packageName, `--share`, `*.launch`);
-    }
-    else {
-        const dirs = `catkin_find --without-underlays --share '${packageName}'`;
-        command = `find $(${dirs}) -type f -name *.launch`;
-    }
-
-    return new Promise((c, e) => child_process.exec(command, { env: extension.env }, (err, out) => {
-        err ? e(err) : c(out.trim().split(os.EOL));
-    }));
 }
 
 /**
