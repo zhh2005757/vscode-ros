@@ -17,10 +17,7 @@ export async function rosrun(context: vscode.ExtensionContext) {
 }
 
 async function preparerosrun(): Promise<vscode.Terminal> {
-    const getPackages = rosApi.getPackages();
-    const packageName = await vscode.window.showQuickPick(getPackages.then((packages: { [name: string]: string }) => {
-        return Object.keys(packages);
-    }), {
+    const packageName = await vscode.window.showQuickPick(rosApi.getPackageNames(), {
         placeHolder: "Choose a package",
     });
     if (!packageName) {
@@ -48,10 +45,7 @@ export async function roslaunch(context: vscode.ExtensionContext) {
 }
 
 async function prepareroslaunch(): Promise<vscode.Terminal> {
-    const getPackages = rosApi.getPackages();
-    const packageName = await vscode.window.showQuickPick(getPackages.then((packages: { [name: string]: string }) => {
-        return Object.keys(packages);
-    }), {
+    const packageName = await vscode.window.showQuickPick(rosApi.getPackageNames(), {
         placeHolder: "Choose a package",
     });
     if (!packageName) {

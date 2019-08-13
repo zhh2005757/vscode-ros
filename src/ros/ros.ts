@@ -3,13 +3,20 @@
 
 import * as vscode from "vscode";
 
-import * as ros1 from './ros1'
+import * as unknownROS from "./common/unknown-ros";
+import * as ros1 from "./ros1/ros1";
+import * as ros2 from "./ros2/ros2";
 
 export interface ROSApi {
     /**
      * Set additional context.
      */
     setContext: (context: vscode.ExtensionContext, env: any) => void;
+
+    /**
+     * Get a list of packages.
+     */
+    getPackageNames: () => Promise<string[]>;
 
     /**
      * Gets a map of package names to paths.
@@ -64,4 +71,22 @@ export interface ROSApi {
     activateRoslaunch: (launchFilepath: string, argument: string) => vscode.Terminal;
 }
 
-export let rosApi: ROSApi = new ros1.ROS1();
+const ros1Api: ROSApi = new ros1.ROS1();
+const ros2Api: ROSApi = new ros2.ROS2();
+const unknownRosApi: ROSApi = new unknownROS.UnknownROS();
+
+export let rosApi: ROSApi = unknownRosApi;
+
+export function selectROSApi(version: string) {
+    rosApi = unknownRosApi;
+    switch(version.trim()) {
+        case "1": {
+            rosApi = ros1Api;
+            break;
+        }
+        case "2": {
+            rosApi = ros2Api;
+            break;
+        }
+    }
+}

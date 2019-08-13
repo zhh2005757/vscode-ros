@@ -11,10 +11,9 @@ export class LaunchResolver implements vscode.DebugConfigurationProvider {
     public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration, token?: vscode.CancellationToken) {
         const command = await vscode.window.showQuickPick(["roslaunch", "rosrun"], { placeHolder: "Launch command" });
 
-        const getPackages = rosApi.getPackages();
-        const packageName = await vscode.window.showQuickPick(getPackages.then((packages: { [name: string]: string }) => {
-            return Object.keys(packages);
-        }), { placeHolder: "Package" });
+        const packageName = await vscode.window.showQuickPick(rosApi.getPackageNames(), {
+            placeHolder: "Package",
+        });
 
         let target: string;
 
