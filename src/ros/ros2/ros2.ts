@@ -6,6 +6,7 @@ import * as os from "os";
 import * as vscode from "vscode";
 
 import * as ros from "../ros";
+import * as daemon from "./daemon";
 
 export class ROS2 implements ros.ROSApi {
     private context: vscode.ExtensionContext;
@@ -95,19 +96,18 @@ export class ROS2 implements ros.ROSApi {
         }));
     }
 
-    public startCore() {
-        // not yet implemented.
-        return;
+    public async startCore() {
+        daemon.startDaemon();
     }
 
-    public stopCore() {
-        // not yet implemented.
-        return;
+    public async stopCore() {
+        daemon.stopDaemon();
     }
 
     public activateCoreMonitor(): vscode.Disposable {
-        // not yet implemented.
-        return null;
+        const coreStatusItem = new daemon.StatusBarItem();
+        coreStatusItem.activate();
+        return coreStatusItem;
     }
 
     public showCoreMonitor() {
