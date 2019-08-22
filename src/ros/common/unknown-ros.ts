@@ -27,6 +27,11 @@ export class UnknownROS implements ros.ROSApi {
         return;
     }
 
+    public getWorkspaceIncludeDirs(workspaceDir: string): Promise<string[]> {
+        console.error("Unknown ROS distro.");
+        return;
+    }
+
     public findPackageExecutables(packageName: string): Promise<string[]> {
         console.error("Unknown ROS distro.");
         return;

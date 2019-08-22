@@ -29,6 +29,12 @@ export interface ROSApi {
     getIncludeDirs: () => Promise<string[]>;
 
     /**
+     * Gets a list of include paths under current workspace.
+     * @param workspaceDir
+     */
+    getWorkspaceIncludeDirs: (workspaceDir: string) => Promise<string[]>;
+
+    /**
      * list full paths to all executables inside a package
      * @param packageName 
      */

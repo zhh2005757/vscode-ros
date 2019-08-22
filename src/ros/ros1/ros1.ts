@@ -5,10 +5,13 @@ import * as child_process from "child_process";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import * as util from "util";
 import * as vscode from "vscode";
 
 import * as ros from "../ros";
 import * as ros_core from "./core-helper";
+
+const promisifiedExists = util.promisify(fs.exists);
 
 export class ROS1 implements ros.ROSApi {
     private context: vscode.ExtensionContext;
@@ -72,6 +75,27 @@ export class ROS1 implements ros.ROSApi {
         return Promise.all(fsPromises).then(() => {
             return includeDirs;
         });
+    }
+
+    public async getWorkspaceIncludeDirs(workspaceDir: string): Promise<string[]> {
+        // Get all packages within the workspace that have an include directory
+        const packages = await this.getPackages();
+        const filteredPackages = await Object.values(packages).filter(async (packagePath: () => Promise<string>) => {
+            const packageBasePath = await packagePath();
+            return packageBasePath.startsWith(workspaceDir);
+        });
+
+        const includes: string[] = [];
+        for (const pkg of filteredPackages) {
+            const packageBasePath = await pkg();
+            const include = path.join(packageBasePath, "include");
+
+            if (await promisifiedExists(include)) {
+                includes.push(include);
+            }
+        }
+
+        return includes;
     }
 
     public findPackageExecutables(packageName: string): Promise<string[]> {

@@ -48,25 +48,8 @@ export async function updateCppProperties(context: vscode.ExtensionContext): Pro
  */
 async function updateCppPropertiesInternal(): Promise<void> {
     let includes = await rosApi.getIncludeDirs();
-
-    // Get all packages within the workspace that have an include directory
-    const filteredPackages = await rosApi.getPackages().then((packages: { [name: string]: () => Promise<string> }) => {
-        return Object.values(packages).filter(async (packagePath: () => Promise<string>) => {
-            const packageBasePath = await packagePath();
-            return packageBasePath.startsWith(extension.baseDir);
-        });
-    });
-
-    await Promise.all(filteredPackages.map(async pkg => {
-        const packageBasePath = await pkg();
-        const include = path.join(packageBasePath, "include");
-
-        return pfs.exists(include).then(exists => {
-            if (exists) {
-                includes.push(include);
-            }
-        });
-    }));
+    const workspaceIncludes = await rosApi.getWorkspaceIncludeDirs(extension.baseDir);
+    includes = includes.concat(workspaceIncludes);
 
     if (process.platform !== "win32") {
         includes.push(path.join("/", "usr", "include"));
