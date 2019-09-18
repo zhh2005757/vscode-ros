@@ -178,9 +178,13 @@ function activateEnvironment(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand(Commands.Roslaunch, () => {
             ros_cli.roslaunch(context);
         }),
-
         vscode.commands.registerCommand(Commands.PreviewURDF, () => {
             URDFPreviewManager.INSTANCE.preview(vscode.window.activeTextEditor.document.uri);
+        }),
+        vscode.tasks.onDidEndTask((event: vscode.TaskEndEvent) => {
+            if (buildtool.isROSBuildTask(event.execution.task)) {
+                sourceRosAndWorkspace();
+            }
         }),
     );
 

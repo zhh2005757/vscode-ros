@@ -113,3 +113,14 @@ export async function determineBuildTool(dir: string): Promise<boolean> {
     }
     return false;
 }
+
+/**
+ * Check if a task belongs to our extension.
+ * @param task Task to check
+ */
+export function isROSBuildTask(task: vscode.Task) {
+    const types = new Set(["catkin", "catkin_make", "catkin_make_isolated", "colcon"]);
+    const isRosTask = types.has(task.definition.type);
+    const isBuildTask = vscode.TaskGroup.Build === task.group;
+    return isRosTask && isBuildTask;
+}
