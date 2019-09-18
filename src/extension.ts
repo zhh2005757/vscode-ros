@@ -142,7 +142,7 @@ function activateEnvironment(context: vscode.ExtensionContext) {
     rosApi.setContext(context, env);
 
     subscriptions.push(rosApi.activateCoreMonitor());
-    subscriptions.push(buildtool.BuildTool.registerTaskProvider());
+    subscriptions.push(...buildtool.BuildTool.registerTaskProvider());
 
     debug_manager.registerRosDebugManager(context);
 

@@ -24,7 +24,7 @@ export class CatkinToolsProvider implements vscode.TaskProvider {
         make.group = vscode.TaskGroup.Build;
         make.problemMatchers = ["$catkin-gcc"];
 
-        const test = new vscode.Task({ type: "catkin", target: "run_tests" }, "run_tests", "catkin");
+        const test = new vscode.Task({ type: "catkin" }, "run_tests", "catkin");
         test.execution = new vscode.ShellExecution(testCommand, {
             env: extension.env,
         });

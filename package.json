@@ -223,7 +223,7 @@
         },
         "problemMatchers": [
             {
-                "name": "$catkin-gcc",
+                "name": "catkin-gcc",
                 "fileLocation": "absolute",
                 "owner": "catkin",
                 "pattern": {
@@ -234,6 +234,20 @@
                     "severity": 4,
                     "message": 5
                 }
+            }
+        ],
+        "taskDefinitions": [
+            {
+                "type": "catkin_make"
+            },
+            {
+                "type": "catkin_make_isolated"
+            },
+            {
+                "type": "catkin"
+            },
+            {
+                "type": "colcon"
             }
         ]
     },

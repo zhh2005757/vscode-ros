@@ -13,7 +13,7 @@ import * as colcon from "./colcon";
 
 export abstract class BuildTool {
     public static current: BuildTool;
-    public static registerTaskProvider(): vscode.Disposable {
+    public static registerTaskProvider(): vscode.Disposable[] {
         return this.current._registerTaskProvider();
     }
 
@@ -23,13 +23,13 @@ export abstract class BuildTool {
         return this.current._createPackage();
     }
 
-    protected abstract _registerTaskProvider(): vscode.Disposable;
+    protected abstract _registerTaskProvider(): vscode.Disposable[];
     protected abstract async _createPackage(): Promise<void>;
 }
 
 // tslint:disable-next-line: max-classes-per-file
 class NotImplementedBuildTool extends BuildTool {
-    protected _registerTaskProvider(): vscode.Disposable {
+    protected _registerTaskProvider(): vscode.Disposable[] {
         return null;
     }
 
@@ -44,8 +44,11 @@ class CatkinCmakeBuildTool extends BuildTool {
         return pfs.exists(`${dir}/.catkin_workspace`);
     }
 
-    protected _registerTaskProvider(): vscode.Disposable {
-        return vscode.workspace.registerTaskProvider("catkin_cmake", new catkin.CatkinProvider());
+    protected _registerTaskProvider(): vscode.Disposable[] {
+        return [
+            vscode.tasks.registerTaskProvider("catkin_cmake", new catkin.CatkinMakeProvider()),
+            vscode.tasks.registerTaskProvider("catkin_cmake_isolated", new catkin.CatkinMakeIsolatedProvider()),
+        ];
     }
 
     protected async _createPackage(): Promise<void> {
@@ -59,8 +62,8 @@ class CatkinToolsBuildTool extends BuildTool {
         return pfs.exists(`${dir}/.catkin_tools`);
     }
 
-    protected _registerTaskProvider(): vscode.Disposable {
-        return vscode.workspace.registerTaskProvider("catkin_tools", new catkin_tools.CatkinToolsProvider());
+    protected _registerTaskProvider(): vscode.Disposable[] {
+        return [vscode.tasks.registerTaskProvider("catkin", new catkin_tools.CatkinToolsProvider())];
     }
 
     protected async _createPackage(): Promise<void> {
@@ -74,8 +77,8 @@ class ColconBuildTool extends BuildTool {
         return colcon.isApplicable(dir);
     }
 
-    protected _registerTaskProvider(): vscode.Disposable {
-        return vscode.workspace.registerTaskProvider("colcon", new colcon.ColconProvider());
+    protected _registerTaskProvider(): vscode.Disposable[] {
+        return [vscode.tasks.registerTaskProvider("colcon", new colcon.ColconProvider())];
     }
 
     protected async _createPackage(): Promise<void> {
