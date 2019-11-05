@@ -64,7 +64,7 @@ export enum Commands {
 }
 
 export async function activate(context: vscode.ExtensionContext) {
-    const reporter = telemetry.getReporter(context);
+    const reporter = telemetry.getReporter();
 
     extPath = context.extensionPath;
     outputChannel = vscode_utils.createOutputChannel();
@@ -115,8 +115,9 @@ export async function activate(context: vscode.ExtensionContext) {
     };
 }
 
-export function deactivate() {
+export async function deactivate() {
     subscriptions.forEach(disposable => disposable.dispose());
+    await telemetry.clearReporter();
 }
 
 /**
