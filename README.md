@@ -20,6 +20,10 @@ The "ROS Core" indicator in the bottom left will show if the core is currently r
 The first time you open the workspace the extension will automatically create build and test tasks and update the
 C++ and Python paths. You can re-run this process later using the appropriate commands.
 
+## Talk Video
+
+[![ROSCON 2019 ROS Extension Talk Video](https://i.vimeocdn.com/video/839088609_640.webp)](https://vimeopro.com/osrfoundation/roscon-2019/video/379127667)
+
 ## Features
 
 * Automatic ROS environment configuration.
