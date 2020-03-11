@@ -65,14 +65,33 @@ export class LaunchResolver implements vscode.DebugConfigurationProvider {
     }
 
     private generateLaunchRequest(nodeName: string, command: string): ILaunchRequest {
-        // escape backslash in file path
-        const parsedArgs = shell_quote.parse(os.platform() === "win32" ? command.replace(/[\\]/g, "\\$&") : command);
+        let parsedArgs: shell_quote.ParseEntry[];
+        const isWindows = os.platform() === "win32";
+
+        if (isWindows) {
+            // https://github.com/ros/ros_comm/pull/1809
+            // escape backslash in file path
+            parsedArgs = shell_quote.parse(command.replace(/[\\]/g, "\\$&"));
+            parsedArgs = shell_quote.parse(parsedArgs[2].toString().replace(/[\\]/g, "\\$&"));
+        } else {
+            parsedArgs = shell_quote.parse(command);
+        }
 
         const envConfig: { [key: string]: string; } = {};
         while (parsedArgs) {
+            // https://github.com/ros/ros_comm/pull/1809
+            if (isWindows && parsedArgs[0].toString() === "set") {
+                parsedArgs.shift();
+            }
             if (parsedArgs[0].toString().includes("=")) {
                 const arg = parsedArgs.shift().toString();
                 envConfig[arg.substring(0, arg.indexOf("="))] = arg.substring(arg.indexOf("=") + 1);
+
+                // https://github.com/ros/ros_comm/pull/1809
+                // "&&" is treated as Object
+                if (isWindows && parsedArgs[0] instanceof Object) {
+                    parsedArgs.shift();
+                }
             } else {
                 break;
             }
