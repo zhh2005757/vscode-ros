@@ -1,7 +1,5 @@
 # Visual Studio Code Extension for ROS
 
-![Build Status][vscode-ros-master-build_status]
-
 The [Visual Studio Code][vscode] Extension for ROS provides support for [Robot Operating System (ROS)][ros] development. Providing an easier and more stream-lined developer experience.
 
 ## Getting Started
@@ -55,10 +53,8 @@ C++ and Python paths. You can re-run this process later using the appropriate co
 
 ### Get Latest Build
 
-[![Build Status][vscode-ros-master-build_status]][vscode-ros-master-build_details]
-
 The lastest unreleased changes could be added by installing the extension's latest build manually.
-To get the latest build (`.vsix` built from the latest commit), access our [build pipeline][vscode-ros-master-build_details] by clicking on the build badge attached above.
+To get the latest build (`.vsix` built from the latest commit), access our [build pipeline][vscode-ros-master-build_details].
 In the build status page, the generated `.vsix` could be downloaded as an artifact:
 
 ![download vsix artifact][download_vsix_artifact]
@@ -100,5 +96,4 @@ Contributions are always welcome! Please see our [contributing guide][contributi
 <!-- link to external sites -->
 [ros]: http://ros.org
 [vscode]: https://code.visualstudio.com
-[vscode-ros-master-build_status]: https://github.com/ms-iot/vscode-ros/workflows/.github/workflows/workflow.yml/badge.svg?branch=master&event=push
 [vscode-ros-master-build_details]: https://github.com/ms-iot/vscode-ros/actions?query=event%3Apush
