@@ -30,13 +30,9 @@ export function launchMonitor(context: vscode.ExtensionContext) {
         }
     );
 
-    const stylesheet = vscode.Uri.file(path.join(context.extensionPath, "assets", "ros", "core-monitor", "style.css")).with({
-        scheme: "vscode-resource"
-    });
+    const stylesheet = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, "assets", "ros", "core-monitor", "style.css")));
 
-    const script = vscode.Uri.file(path.join(context.extensionPath, "out", "src", "ros", "ros2", "webview", "main.js")).with({
-        scheme: "vscode-resource"
-    });
+    const script = panel.webview.asWebviewUri(vscode.Uri.file(path.join(context.extensionPath, "out", "src", "ros", "ros2", "webview", "main.js")));
 
     panel.webview.html = getCoreStatusWebviewContent(stylesheet, script);
 
