@@ -14,6 +14,7 @@ import * as vscode from "vscode";
 
 import * as extension from "../../../extension";
 import * as requests from "../../requests";
+import * as utils from "../../utils";
 
 const promisifiedExec = util.promisify(child_process.exec);
 
@@ -27,13 +28,13 @@ interface ILaunchRequest {
 
 export class LaunchResolver implements vscode.DebugConfigurationProvider {
     // tslint:disable-next-line: max-line-length
-    public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: requests.ILaunchRequest, token?: vscode.CancellationToken) {
+    public async resolveDebugConfigurationWithSubstitutedVariables(folder: vscode.WorkspaceFolder | undefined, config: requests.ILaunchRequest, token?: vscode.CancellationToken) {
         if (!path.isAbsolute(config.target) || path.extname(config.target) !== ".launch") {
             throw new Error("Launch request requires an absolute path as target.");
         }
-
+        
         const rosExecOptions: child_process.ExecOptions = {
-            env: extension.env,
+            env: await extension.resolvedEnv(),
         };
 
         let result = await promisifiedExec(`roslaunch --dump-params ${config.target}`, rosExecOptions);
@@ -63,6 +64,7 @@ export class LaunchResolver implements vscode.DebugConfigurationProvider {
         } else if (result.stdout.length == 0) {
             throw (new Error(`roslaunch unexpectedly produced no output, please test by running \"roslaunch --dump-params ${config.target}\" in a ros terminal.`));
         }
+
         const nodes = result.stdout.trim().split(os.EOL);
         await Promise.all(nodes.map((node: string) => {
             return promisifiedExec(`roslaunch --args ${node} ${config.target}`, rosExecOptions);
@@ -73,8 +75,11 @@ export class LaunchResolver implements vscode.DebugConfigurationProvider {
             });
         });
         // @todo: error handling for Promise.all
-        return config;
+
+        // Return null as we have spawned new debug requests
+        return null;
     }
+
 
     private generateLaunchRequest(nodeName: string, command: string): ILaunchRequest {
         let parsedArgs: shell_quote.ParseEntry[];

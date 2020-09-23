@@ -2,9 +2,24 @@
 // Licensed under the MIT License.
 
 import * as vscode from "vscode";
+import * as util from "util";
 
 import * as extension from "../extension";
 import * as telemetry from "../telemetry-helper";
+
+export async function oneTimePromiseFromEvent(eventCall, filter = undefined) : Promise<any> {
+    return new Promise(resolve => {
+        let disposable: vscode.Disposable;
+        disposable = eventCall(event => {
+            if (filter && !filter(event)) {
+                return;
+            }
+
+            disposable.dispose();
+            resolve(event);
+        });
+    });
+}
 
 /**
  * Gets stringified settings to pass to the debug server.
