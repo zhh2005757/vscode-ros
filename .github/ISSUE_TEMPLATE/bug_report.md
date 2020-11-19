@@ -7,15 +7,27 @@ assignees: ''
 
 ---
 
-**general information**
-\<OS version, Ubuntu? Windows?\>
+(Please add appropriate labels)
+- [ ] Windows: (Version)
+- [ ] Linux:  (Dist/Version)
+- [ ] ROS 1: Dist
+- [ ] ROS 2: Dist
+
 \<Version of the plugin\>
 
-**what is the bug**
-\<current behavior, how to reproduce\>
+\<Copy the Version information from the `Help | About` menu\>
 
-**expected behavior**
+# what is the bug
+\<current behavior\>
+
+## Repro steps
+\<how to reproduce the bug. Please attach sample files or github repo if appropriate.\>
+1.
+2.
+3.
+
+# expected behavior
 \<what you would expect to happen\>
 
-**additional context**
+# additional context
 \<any additional information would be helpful for a better understanding\>
