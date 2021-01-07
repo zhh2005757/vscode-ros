@@ -1,5 +1,7 @@
 # Changelog
 
+## Forthcoming
+
 ## 0.6.5
 
 * [#365](https://github.com/ms-iot/vscode-ros/pull/365) [ros2] find all launch files (by @Hexafog)
