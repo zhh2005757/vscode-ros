@@ -81,7 +81,10 @@ export class ROS2 implements ros.ROSApi {
 
     public async getWorkspaceIncludeDirs(workspaceDir: string): Promise<string[]> {
         const includes: string[] = [];
-        const opts = { env: this.env };
+        const opts = {
+            env: this.env,
+            cwd: workspaceDir
+        };
         const result = await promisifiedExec(`colcon list -p --base-paths "${workspaceDir}"`, opts);
 
         // error out if we see anything from stderr.
@@ -130,7 +133,7 @@ export class ROS2 implements ros.ROSApi {
         const packageBasePath = await packages[packageName]();
         const command: string = (process.platform === "win32") ?
             `where /r "${packageBasePath}" *launch.py` :
-            `find $(${packageBasePath}) -type f -name *launch.py`;
+            `find "${packageBasePath}" -type f -name *launch.py`;
 
         return new Promise((c, e) => child_process.exec(command, { env: this.env }, (err, out) => {
             err ? e(err) : c(out.trim().split(os.EOL));
