@@ -1,5 +1,7 @@
 # Changelog
 
+## Forthcoming
+
 ## 0.6.6
 
 * [#372](https://github.com/ms-iot/vscode-ros/pull/372) Adding error messages on exceptions for better diagnosis (by @seanyen)

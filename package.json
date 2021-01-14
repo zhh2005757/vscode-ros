@@ -1,6 +1,6 @@
 {
     "name": "vscode-ros",
-    "version": "0.6.6",
+    "version": "0.6.7-dev",
     "publisher": "ms-iot",
     "engines": {
         "vscode": "^1.52.0"
