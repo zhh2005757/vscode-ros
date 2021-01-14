@@ -1,6 +1,10 @@
 # Changelog
 
-## Forthcoming
+## 0.6.6
+
+* [#372](https://github.com/ms-iot/vscode-ros/pull/372) Adding error messages on exceptions for better diagnosis (by @seanyen)
+* [#371](https://github.com/ms-iot/vscode-ros/pull/371) Adding the missing version for cpp properties. (by @seanyen)
+* [#368](https://github.com/ms-iot/vscode-ros/pull/368) [ROS2] Adding Initial ROS2 Launch Debug Support (by @seanyen)
 
 ## 0.6.5
 
