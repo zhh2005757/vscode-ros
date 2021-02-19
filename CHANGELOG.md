@@ -1,6 +1,8 @@
 # Changelog
 
-## Forthcoming
+## 0.6.7
+
+* [#391](https://github.com/ms-iot/vscode-ros/pull/391) Launch debug args is optional. (by @seanyen)
 
 ## 0.6.6
 
