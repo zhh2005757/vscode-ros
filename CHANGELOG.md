@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.3
+* Use default workspace storage for IntelliSense db to avoid frequent writes to watched .vscode directory
+
 ## 0.8.2
 * Correct ROS1 launch command that does not contain arguments
 
